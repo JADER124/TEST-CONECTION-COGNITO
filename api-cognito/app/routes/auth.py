@@ -64,3 +64,58 @@ class Login(Resource):
 class LoginFormView(Resource):
     def get(self):
         return make_response(render_template('login.html'), 200, {"Content-Type": "text/html"})
+    
+@auth_ns.route('/form/callback')
+class CognitoCallback(Resource):
+    def get(self):
+        import requests
+        from urllib.parse import urlencode
+
+        print("URL recibida:", request.url)
+        code = request.args.get("code")
+
+
+        code = request.args.get("code")
+        if not code:
+            return "No se recibió el código de autorización", 400
+
+        token_url = "https://us-east-1dslegzc6q.auth.us-east-1.amazoncognito.com/oauth2/token"
+        client_id = COGNITO_CLIENT_ID
+        client_secret = COGNITO_CLIENT_SECRET
+        redirect_uri = "http://localhost:5000/api/auth/form/callback"
+
+
+        # Intercambio del código por tokens
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }
+
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+
+        response = requests.post(token_url, data=urlencode(data), headers=headers)
+
+        if response.status_code == 200:
+            tokens = response.json()
+
+            # Decodificar el id_token para obtener info del usuario
+            import jwt
+            id_token = tokens['id_token']
+            decoded = jwt.decode(id_token, options={"verify_signature": False})
+
+            print("Usuario autenticado:", decoded["email"], decoded.get("name", ""))
+
+            return {
+                "message": "Login con Google exitoso",
+                "usuario": {
+                    "email": decoded["email"],
+                    "nombre": decoded.get("name", "")
+                },
+                "tokens": tokens
+            }, 200
+
