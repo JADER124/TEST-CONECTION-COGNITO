@@ -14,8 +14,6 @@ class GetFrutas(Resource):
     def get(self):
          return frutas
     
-
-
 @frutas_ns.route('/agregar')
 class GetFrutas(Resource):
     @frutas_ns.expect(fruta_model)

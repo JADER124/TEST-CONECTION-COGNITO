@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login con Cognito</title>
+</head>
+<body>
+    <h2>Iniciar sesión</h2>
+
+    <form id="login-form">
+        <label for="Usuario">Usuario:</label><br>
+        <input type="text" id="Usuario" required><br><br>
+
+        <label for="Password">Contraseña:</label><br>
+        <input type="password" id="Password" required><br><br>
+
+        <button type="submit">Ingresar</button>
+    </form>
+
+    <p id="resultado" style="color: red;"></p>
+
+    <script>
+        const form = document.getElementById("login-form");
+        const resultado = document.getElementById("resultado");
+
+        form.addEventListener("submit", async function(event) {
+            event.preventDefault(); // evita que se recargue la página
+
+            const data = {
+                Usuario: document.getElementById("Usuario").value,
+                Password: document.getElementById("Password").value
+            };
+
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                resultado.style.color = "green";
+                resultado.textContent = result.message;
+                console.log(response)
+                console.log(result)
+                // también puedes guardar los tokens aquí si quieres
+            } else {
+                resultado.style.color = "red";
+                resultado.textContent = result.error || result.message || "Error inesperado";
+            }
+        });
+    </script>
+</body>
+</html>

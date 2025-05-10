@@ -1,5 +1,5 @@
 from flask_restx import Api, Resource, Namespace, fields
-from flask import request  
+from flask import request,make_response,render_template
 import boto3
 import hmac
 import hashlib
@@ -12,8 +12,6 @@ auth_model = auth_ns.model("Auth", {
     "Password": fields.String(required=True, description="Password")
 
 })
-
-
 
 # Configuración base 
 COGNITO_CLIENT_ID = "5rlup4jm31f1nfjg27jephpjr1"
@@ -62,3 +60,7 @@ class Login(Resource):
         except Exception as e:
             return {"error": str(e)}, 500
 
+@auth_ns.route('/form')
+class LoginFormView(Resource):
+    def get(self):
+        return make_response(render_template('login.html'), 200, {"Content-Type": "text/html"})
